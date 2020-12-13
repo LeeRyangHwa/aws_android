@@ -20,7 +20,7 @@
 
 ### java AWS LAMbda 코드작성
 
-람다자바를 통해 DB에 디바이스에서 전송하는 값을 저장한다.
+1.람다자바를 통해 DB에 디바이스에서 전송하는 값을 저장한다.
 ~~~
     private String persistData(Document document) throws ConditionalCheckFailedException {
         // Epoch Conversion Code: https://www.epochconverter.com/
@@ -78,6 +78,250 @@ class Thing {
 }
 ~~~~
 
- RESTAPI를 구현하여 앱으로 디바이스를 제어하게 한다
- 
+2. RESTAPI를 구현하여 앱으로 디바이스를 제어하게 한다
+ 1. 디바이스 목록 조회
+~~~
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+
+import java.util.List;
+import com.amazonaws.services.iot.AWSIot;
+import com.amazonaws.services.iot.AWSIotClientBuilder;
+import com.amazonaws.services.iot.model.ListThingsRequest;
+import com.amazonaws.services.iot.model.ListThingsResult;
+import com.amazonaws.services.iot.model.ThingAttribute;
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+
+public class ListingDeviceHandler implements RequestHandler<Object, String> {
+
+    @Override
+    public String handleRequest(Object input, Context context) {
+
+        // AWSIot 객체를 얻는다. 
+        AWSIot iot = AWSIotClientBuilder.standard().build();
+
+        // ListThingsRequest 객체 설정. 
+        ListThingsRequest listThingsRequest = new ListThingsRequest();
+
+        // listThings 메소드 호출하여 결과 얻음. 
+        ListThingsResult result = iot.listThings(listThingsRequest);
+
+        // result 객체로부터 API 응답모델 문자열 생성하여 반
+        return getResponse(result);
+    }
+
+    /**
+     * ListThingsResult 객체인 result로 부터 ThingName과 ThingArn을 얻어서 Json문자 형식의
+     * 응답모델을 만들어 반환한다.
+     * {
+     *  "things": [ 
+     *       { 
+     *          "thingName": "string",
+     *          "thingArn": "string"
+     *       },
+     *       ...
+     *     ]
+     * }
+     */
+    private String getResponse(ListThingsResult result) {
+        List<ThingAttribute> things = result.getThings();
+
+        String response = "{ \"things\": [";
+        for (int i =0; i<things.size(); i++) {
+            if (i!=0) 
+                response +=",";
+            response += String.format("{\"thingName\":\"%s\", \"thingArn\":\"%s\"}", 
+                                                things.get(i).getThingName(),
+                                                things.get(i).getThingArn());
+
+        }
+        response += "]}";
+        return response;
+    }
+    ~~~
+    2. 로그 조회
+    ~~~
+ import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Iterator;
+import java.util.TimeZone;
+
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.ItemCollection;
+import com.amazonaws.services.dynamodbv2.document.ScanOutcome;
+import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.spec.ScanSpec;
+import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
+import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+
+public class LogDeviceHandler implements RequestHandler<Event, String> {
+
+    private DynamoDB dynamoDb;
+    
+
+    @Override
+    public String handleRequest(Event input, Context context) {
+        this.initDynamoDbClient();
+
+        Table table = dynamoDb.getTable(input.device);
+
+        long from=0;
+        long to=0;
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat ( "yyyy-MM-dd HH:mm:ss");
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+
+            from = sdf.parse(input.from).getTime() / 1000;
+            to = sdf.parse(input.to).getTime() / 1000;
+        } catch (ParseException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+
+        ScanSpec scanSpec = new ScanSpec()
+                .withFilterExpression("#t between :from and :to").withNameMap(new NameMap().with("#t", "time"))
+                .withValueMap(new ValueMap().withNumber(":from", from).withNumber(":to", to));
+
+        ItemCollection<ScanOutcome> items=null;
+        try {
+            items = table.scan(scanSpec);
+        }
+        catch (Exception e) {
+            System.err.println("Unable to scan the table:");
+            System.err.println(e.getMessage());
+        }
+
+        return getResponse(items);
+    }
+
+    private String getResponse(ItemCollection<ScanOutcome> items) {
+
+        Iterator<Item> iter = items.iterator();
+        String response = "{ \"data\": [";
+        for (int i =0; iter.hasNext(); i++) {
+            if (i!=0) 
+                response +=",";
+            response += iter.next().toJSON();
+        }
+        response += "]}";
+        return response;
+    }
+
+    private void initDynamoDbClient() {
+        AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().withRegion("ap-northeast-2").build();
+
+        this.dynamoDb = new DynamoDB(client);
+    }
+}
+
+class Event {
+    public String device;
+    public String from;
+    public String to;
+}
+~~~
+3. 상태변경
+~~~
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+
+import com.amazonaws.services.iotdata.AWSIotData;
+import com.amazonaws.services.iotdata.AWSIotDataClientBuilder;
+import com.amazonaws.services.iotdata.model.UpdateThingShadowRequest;
+import com.amazonaws.services.iotdata.model.UpdateThingShadowResult;
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.fasterxml.jackson.annotation.JsonCreator;
+
+public class UpdateDeviceHandler implements RequestHandler<Event, String> {
+
+    @Override
+    public String handleRequest(Event event, Context context) {
+        context.getLogger().log("Input: " + event);
+
+        AWSIotData iotData = AWSIotDataClientBuilder.standard().build();
+
+        String payload = getPayload(event.tags);
+
+        UpdateThingShadowRequest updateThingShadowRequest  = 
+                new UpdateThingShadowRequest()
+                    .withThingName(event.device)
+                    .withPayload(ByteBuffer.wrap(payload.getBytes()));
+
+        UpdateThingShadowResult result = iotData.updateThingShadow(updateThingShadowRequest);
+        byte[] bytes = new byte[result.getPayload().remaining()];
+        result.getPayload().get(bytes);
+        String resultString = new String(bytes);
+        return resultString;
+    }
+
+    private String getPayload(ArrayList<Tag> tags) {
+        String tagstr = "";
+        for (int i=0; i < tags.size(); i++) {
+            if (i !=  0) tagstr += ", ";
+            tagstr += String.format("\"%s\" : \"%s\"", tags.get(i).tagName, tags.get(i).tagValue);
+        }
+        return String.format("{ \"state\": { \"desired\": { %s } } }", tagstr);
+    }
+
+}
+
+class Event {
+    public String device;
+    public ArrayList<Tag> tags;
+
+    public Event() {
+         tags = new ArrayList<Tag>();
+    }
+}
+
+class Tag {
+    public String tagName;
+    public String tagValue;
+
+    @JsonCreator 
+    public Tag() {
+    }
+
+    public Tag(String n, String v) {
+        tagName = n;
+        tagValue = v;
+    }
+}
+~~~
+4. 상태조회
+~~~
+import com.amazonaws.services.iotdata.AWSIotData;
+import com.amazonaws.services.iotdata.AWSIotDataClientBuilder;
+import com.amazonaws.services.iotdata.model.GetThingShadowRequest;
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+
+public class GetDeviceHandler implements RequestHandler<Event, String> {
+
+    @Override
+    public String handleRequest(Event event, Context context) {
+        AWSIotData iotData = AWSIotDataClientBuilder.standard().build();
+
+        GetThingShadowRequest getThingShadowRequest  = 
+        new GetThingShadowRequest()
+            .withThingName(event.device);
+
+        iotData.getThingShadow(getThingShadowRequest);
+
+        return new String(iotData.getThingShadow(getThingShadowRequest).getPayload().array());
+    }
+}
+
+class Event {
+    public String device;
+}
+~~~
+
  
