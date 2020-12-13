@@ -18,7 +18,7 @@
 ![33333333333](https://user-images.githubusercontent.com/75929596/102010862-1d363000-3d84-11eb-9569-9b70fb5dd7e6.jpg)
 
 
-### java AWS LAMbda 코드작성
+## java AWS LAMbda 코드작성
 
 1.람다자바를 통해 DB에 디바이스에서 전송하는 값을 저장한다.
 ~~~
@@ -78,7 +78,9 @@ class Thing {
 }
 ~~~~
 
-2. RESTAPI를 구현하여 앱으로 디바이스를 제어하게 한다
+###2. RESTAPI를 구현하여 앱으로 디바이스를 제어하게 한다
+
+
  1. 디바이스 목록 조회
 ~~~
 import com.amazonaws.services.lambda.runtime.Context;
