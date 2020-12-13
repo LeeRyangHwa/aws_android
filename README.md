@@ -19,7 +19,7 @@
 
 ## java AWS LAMbda 코드작성
 
-###1.람다자바를 통해 DB에 디바이스에서 전송하는 값을 저장한다.
+### 1.람다자바를 통해 DB에 디바이스에서 전송하는 값을 저장한다.
 ~~~
     private String persistData(Document document) throws ConditionalCheckFailedException {
         // Epoch Conversion Code: https://www.epochconverter.com/
