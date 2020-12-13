@@ -19,7 +19,7 @@
 
 ## java AWS LAMbda 코드작성
 
-1.람다자바를 통해 DB에 디바이스에서 전송하는 값을 저장한다.
+###1.람다자바를 통해 DB에 디바이스에서 전송하는 값을 저장한다.
 ~~~
     private String persistData(Document document) throws ConditionalCheckFailedException {
         // Epoch Conversion Code: https://www.epochconverter.com/
@@ -76,7 +76,7 @@ class Thing {
     }
 }
 ~~~~
-###2. RESTAPI를 구현하여 앱으로 디바이스를 제어하게 한다
+### 2. RESTAPI를 구현하여 앱으로 디바이스를 제어하게 한다
 
 
  1. 디바이스 목록 조회
