@@ -7,7 +7,7 @@
 <div>
 <img src="https://user-images.githubusercontent.com/75929596/102011164-ee20be00-3d85-11eb-8121-c36849a8e116.png" width=200></img>         
 <img src="https://user-images.githubusercontent.com/75929596/102011203-26280100-3d86-11eb-9120-36da49743843.jpg" width=200></img> 
-<img src="https://user-images.githubusercontent.com/41534467/102013020-cd119a80-3d90-11eb-8c9e-4de99b1916b9.png" width=200></img> 
+<img src="https://user-images.githubusercontent.com/41534467/102013055-04804700-3d91-11eb-88fc-828d3fb68a42.png" width=200></img> 
 " width=200></img>
 </div>
 준비물 : 아두이노 MKR WiFi 1010 보드,  GP2Y1010AU0F 센서, DC 모터 모듈 L9110
