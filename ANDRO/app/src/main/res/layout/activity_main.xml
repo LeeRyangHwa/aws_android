@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="5dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <View
+            android:id="@+id/view2"
+            android:layout_width="match_parent"
+            android:layout_height="230dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="디바이스 목록 조회"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="20dp" />
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="match_parent"
+            android:layout_height="12dp"
+            android:background="?android:attr/listDivider" />
+
+        <Button
+            android:id="@+id/listThingsBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="사물목록 조회" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="12dp"
+            android:background="?android:attr/listDivider" />
+
+        <EditText
+            android:id="@+id/editurl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="https://bs7p0t1nzb.execute-api.ap-northeast-2.amazonaws.com/prod"
+            android:inputType="textPersonName"
+            android:singleLine="true" />
+
+        <Button
+            android:id="@+id/changeUrl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="URL 변경" />
+
+        <View
+            android:id="@+id/view3"
+            android:layout_width="match_parent"
+            android:layout_height="12dp"
+            android:background="?android:attr/listDivider" />
+
+        <EditText
+            android:id="@+id/editlogurl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="https://bs7p0t1nzb.execute-api.ap-northeast-2.amazonaws.com/prod/devices/DustDB/log"
+            android:inputType="textPersonName"
+            android:singleLine="true" />
+
+        <Button
+            android:id="@+id/changeLogUrl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="로그 URL 변경" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

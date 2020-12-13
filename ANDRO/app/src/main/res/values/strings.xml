@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">SmokingRoom Status</string>
+    <string name="device_state">디바이스 최신 상태</string>
+    <string name="dustdensity">공기질(㎍): </string>
+    <string name="duststate">공기질 상태: </string>
+    <string name="Auto">Auto</string>
+    <string name="Motor">Motor</string>
+</resources>
